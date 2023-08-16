@@ -1,0 +1,19 @@
+version: "3.8"
+name: todos-plus-dev
+services:
+  backend:
+    container_name: backend-dev
+    image: todos-plus-backend-dev:latest
+    build:
+      dockerfile: Dockerfile
+      context: ./apps/backend
+      target: development
+    volumes:
+      - ./apps/backend/:/usr/src/app
+    environment:
+      - NODE_ENV=development
+      - APP_HOST=0.0.0.0
+      - APP_PORT=3000
+    command: npm run start:dev
+    ports:
+      - 3000:3000

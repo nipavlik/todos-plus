@@ -1,0 +1,18 @@
+version: "3.8"
+name: todos-plus
+services:
+  backend:
+    container_name: backend
+    image: todos-plus-backend:latest
+    build:
+      dockerfile: Dockerfile
+      context: ./apps/backend
+      target: production
+    volumes:
+      - ./apps/backend/:/usr/src/app
+    environment:
+      - NODE_ENV=production
+      - APP_HOST=0.0.0.0
+      - APP_PORT=3001
+    ports:
+      - 3001:3001
