@@ -16,6 +16,9 @@ class EnvironmentVariables {
 
   @IsNumber()
   APP_PORT: number;
+
+  @IsString()
+  DATABASE_URL: string;
 }
 
 export function validate(config: Record<string, unknown>) {

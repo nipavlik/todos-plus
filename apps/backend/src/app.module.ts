@@ -7,6 +7,8 @@ import { validate } from './core/config/env.validation';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+import { PrismaModule } from './core/prisma/prisma.module';
+
 @Module({
   imports: [
     // Config
@@ -17,6 +19,7 @@ import { AppService } from './app.service';
       validate,
     }),
     // End Config
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

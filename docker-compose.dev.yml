@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.9"
 name: todos-plus-dev
 services:
   backend:
@@ -13,7 +13,24 @@ services:
     environment:
       - NODE_ENV=development
       - APP_HOST=0.0.0.0
-      - APP_PORT=3000
+      - APP_PORT=7000
+      - DATABASE_URL=postgresql://todosplus:todosplus@postgres-dev:7010/todos_plus?schema=public
     command: npm run start:dev
     ports:
-      - 3000:3000
+      - 7000:7000
+    depends_on:
+      - postgres
+  postgres:
+    container_name: postgres-dev
+    image: postgres:15.4
+    environment:
+      POSTGRES_DB: "todos_plus"
+      POSTGRES_USER: "todosplus"
+      POSTGRES_PASSWORD: "todosplus"
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    ports:
+      - "7010:5432"
+
+volumes:
+  postgres-data-dev:

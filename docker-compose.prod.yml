@@ -1,8 +1,8 @@
-version: "3.8"
-name: todos-plus
+version: "3.9"
+name: todos-plus-prod
 services:
   backend:
-    container_name: backend
+    container_name: backend-prod
     image: todos-plus-backend:latest
     build:
       dockerfile: Dockerfile
@@ -13,6 +13,23 @@ services:
     environment:
       - NODE_ENV=production
       - APP_HOST=0.0.0.0
-      - APP_PORT=3001
+      - APP_PORT=7000
+      - DATABASE_URL=postgresql://todosplus:todosplus@postgres:7010/todos_plus?schema=public
     ports:
-      - 3001:3001
+      - 7000:7000
+    depends_on:
+      - postgres
+  postgres:
+    container_name: postgres-prod
+    image: postgres:15.4
+    environment:
+      POSTGRES_DB: "todos_plus"
+      POSTGRES_USER: "todosplus"
+      POSTGRES_PASSWORD: "todosplus"
+    volumes:
+      - postgres-data-prod:/var/lib/postgresql/data
+    ports:
+      - "7010:5432"
+
+volumes:
+  postgres-data-prod:

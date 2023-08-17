@@ -1,0 +1,17 @@
+version: "3.9"
+name: todos-plus-minimal
+services:
+  postgres:
+    container_name: postgres-minimal
+    image: postgres:15.4
+    environment:
+      POSTGRES_DB: "todos_plus"
+      POSTGRES_USER: "todosplus"
+      POSTGRES_PASSWORD: "todosplus"
+    volumes:
+      - postgres-data-minimal:/var/lib/postgresql/data
+    ports:
+      - "7010:5432"
+
+volumes:
+  postgres-data-minimal:
