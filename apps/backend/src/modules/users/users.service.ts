@@ -1,24 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { User } from '@prisma/client';
+import * as argon2 from 'argon2';
 
-// This should be a real class/interface representing a user entity
-export type User = any;
+import { UsersRepository } from './repositories/users.repository';
 
 @Injectable()
 export class UsersService {
-  private readonly users = [
-    {
-      userId: 1,
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      userId: 2,
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
+  constructor(private usersRepository: UsersRepository) {}
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
+  async findOne(data: { nickname: string }): Promise<User | null> {
+    const user = await this.usersRepository.getOne({
+      where: { nickname: data.nickname },
+    });
+
+    return user;
+  }
+
+  async create(data: {
+    firstName: string;
+    lastName: string;
+    nickname: string;
+    password: string;
+  }): Promise<User> {
+    const existUser = await this.findOne({ nickname: data.nickname });
+    if (existUser) throw new BadRequestException('NICKNAME_USED');
+
+    const hashPassword = await argon2.hash(data.password);
+
+    const newUser = await this.usersRepository.create({
+      data: { ...data, password: hashPassword },
+    });
+
+    return newUser;
   }
 }

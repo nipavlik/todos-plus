@@ -19,6 +19,12 @@ class EnvironmentVariables {
 
   @IsString()
   DATABASE_URL: string;
+
+  @IsString()
+  AUTH_JWT_SECRET: string;
+
+  @IsString()
+  AUTH_JWT_EXPIRES_IN: string;
 }
 
 export function validate(config: Record<string, unknown>) {
