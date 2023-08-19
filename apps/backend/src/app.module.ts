@@ -1,27 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import appConfig from './core/config/app.config';
-import { validate } from './core/config/env.validation';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { configModuleOptions } from './core/config/options';
 
 import { PrismaModule } from './core/prisma/prisma.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
-    // Config
-    ConfigModule.forRoot({
-      isGlobal: true,
-      cache: true,
-      load: [appConfig],
-      validate,
-    }),
-    // End Config
     PrismaModule,
+    AuthModule,
+    UsersModule,
+    ConfigModule.forRoot(configModuleOptions),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
