@@ -7,7 +7,7 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 export class UsersRepository {
   constructor(private prisma: PrismaService) {}
 
-  async getOne(options: {
+  async findOne(options: {
     where: Prisma.UserWhereInput;
   }): Promise<User | null> {
     const { where } = options;

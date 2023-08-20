@@ -10,7 +10,7 @@ export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 
   async getOne(data: FindOneUser): Promise<User | null> {
-    const user = await this.usersRepository.getOne({
+    const user = await this.usersRepository.findOne({
       where: data,
     });
 
