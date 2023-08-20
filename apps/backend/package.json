@@ -22,9 +22,6 @@
     "db:m:migrate": "prisma migrate dev",
     "db:m:rollback": "prisma migrate reset"
   },
-  "prisma": {
-    "schema": "src/core/prisma/schema.prisma"
-  },
   "dependencies": {
     "@faker-js/faker": "^8.0.2",
     "@nestjs/common": "^10.0.0",
