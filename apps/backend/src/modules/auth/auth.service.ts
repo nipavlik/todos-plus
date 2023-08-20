@@ -1,16 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+
 import { v4 as uuidv4 } from 'uuid';
 import * as argon2 from 'argon2';
+import { DateTime } from 'luxon';
+
+import { ConfigService } from '@nestjs/config';
+import { UsersService } from '../users/users.service';
 
 import { RefreshTokensRepository } from './repositories/refreshTokens.repository';
 
-export type PairKey = {
-  accessToken: string;
-  refreshToken: string;
-};
+import { PairKey } from './types';
+import { User, UserNoPassword } from '../users/types';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private refreshTokensRepository: RefreshTokensRepository,
+    private configService: ConfigService,
   ) {}
 
   /**
@@ -27,7 +29,7 @@ export class AuthService {
    * @returns {Promise<User | null>} - Объект пользователя или null, если пользователь не найден или пароль неверный.
    */
   async validateUser(nickname: string, password: string): Promise<User | null> {
-    const user = await this.usersService.findOne({ nickname });
+    const user = await this.usersService.getOne({ nickname });
     if (user && (await argon2.verify(user.password, password))) {
       return user;
     }
@@ -77,5 +79,51 @@ export class AuthService {
       accessToken: this.jwtService.sign(payload),
       refreshToken: refreshToken.token,
     };
+  }
+
+  /**
+   * Обновляет токен доступа и токен обновления.
+   * @param {string} token - Токен обновления.
+   * @returns {Promise<PairKey>} - Объект, содержащий обновленные значения токенов.
+   * @throws {NotFoundException} - Если токен не найден или является недействительным.
+   */
+  async refreshToken(token: string): Promise<PairKey> {
+    const oldRefreshToken = await this.refreshTokensRepository.getOne({
+      where: { token },
+    });
+    if (!oldRefreshToken) throw new NotFoundException('NOT_FOUND_TOKEN');
+
+    const now = DateTime.now();
+    const tokenDateIn3Days = DateTime.fromISO(
+      oldRefreshToken.updatedAt.toISOString(),
+    ).plus({
+      seconds: this.configService.get<number>('auth.refreshExpiresIn'),
+    });
+
+    if (now > tokenDateIn3Days) {
+      throw new NotFoundException('INVALID_TOKEN');
+    }
+
+    const payload = { sub: oldRefreshToken.userId };
+
+    const newRefreshToken = await this.refreshTokensRepository.update({
+      where: { id: oldRefreshToken.id },
+      data: { token: uuidv4() },
+    });
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: newRefreshToken.token,
+    };
+  }
+
+  async me(userId: number): Promise<UserNoPassword> {
+    const user: User | null = await this.usersService.getOne({ id: userId });
+    if (!user) throw new NotFoundException('NOT_FOUND_USER');
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+
+    return userWithoutPassword;
   }
 }

@@ -14,10 +14,10 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
+  app.useGlobalPipes(new ValidationPipe());
+
   const configService = app.get(ConfigService);
   const appConfig = configService.get('app');
-  
-  app.useGlobalPipes(new ValidationPipe());
 
   await app.listen(appConfig.port, appConfig.host);
 }

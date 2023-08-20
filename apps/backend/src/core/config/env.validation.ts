@@ -23,8 +23,11 @@ class EnvironmentVariables {
   @IsString()
   AUTH_JWT_SECRET: string;
 
-  @IsString()
-  AUTH_JWT_EXPIRES_IN: string;
+  @IsNumber()
+  AUTH_JWT_EXPIRES_IN: number;
+
+  @IsNumber()
+  AUTH_REFRESH_EXPIRES_IN: number;
 }
 
 export function validate(config: Record<string, unknown>) {

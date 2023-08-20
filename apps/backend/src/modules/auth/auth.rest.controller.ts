@@ -1,10 +1,17 @@
-import { Controller, Request, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get } from '@nestjs/common';
+
+import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { LocalAuthGuard } from './guards/localAuth.guard';
-import { FastifyRequest } from 'fastify';
-import { AuthService, PairKey } from './auth.service';
+
+import { AuthService } from './auth.service';
 import { RegisterDto } from './dtos/register.dto';
-import { UserNoPassword } from '../users/types/user.type';
-import { User } from '@prisma/client';
+
+import { RefreshTokenDto } from './dtos/refreshToken.dto';
+
+import { AuthUser } from './decorators/authUser.decorator';
+
+import { JwtUser, User, UserNoPassword } from '../users/types';
+import { PairKey } from './types';
 
 @Controller('/auth')
 export class AuthController {
@@ -12,9 +19,8 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('/login/local')
-  async loginLocal(@Request() req: FastifyRequest): Promise<PairKey> {
-    // @ts-ignore
-    return this.authService.login(req.user);
+  async loginLocal(@AuthUser() user: User): Promise<PairKey> {
+    return this.authService.login(user);
   }
 
   @Post('/register')
@@ -25,5 +31,18 @@ export class AuthController {
     const { password, ...userWithoutPassword } = newUser;
 
     return userWithoutPassword;
+  }
+
+  @Post('/refresh-token')
+  async refreshToken(
+    @Body() refreshTokenDto: RefreshTokenDto,
+  ): Promise<PairKey> {
+    return await this.authService.refreshToken(refreshTokenDto.token);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  async me(@AuthUser() user: JwtUser): Promise<UserNoPassword> {
+    return await this.authService.me(user.id);
   }
 }

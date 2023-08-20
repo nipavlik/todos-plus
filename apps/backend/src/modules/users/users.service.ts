@@ -1,28 +1,24 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { User } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 import { UsersRepository } from './repositories/users.repository';
+import { User } from '@prisma/client';
+import { CreateUser, FindOneUser } from './types';
 
 @Injectable()
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 
-  async findOne(data: { nickname: string }): Promise<User | null> {
+  async getOne(data: FindOneUser): Promise<User | null> {
     const user = await this.usersRepository.getOne({
-      where: { nickname: data.nickname },
+      where: data,
     });
 
     return user;
   }
 
-  async create(data: {
-    firstName: string;
-    lastName: string;
-    nickname: string;
-    password: string;
-  }): Promise<User> {
-    const existUser = await this.findOne({ nickname: data.nickname });
+  async create(data: CreateUser): Promise<User> {
+    const existUser = await this.getOne({ nickname: data.nickname });
     if (existUser) throw new BadRequestException('NICKNAME_USED');
 
     const hashPassword = await argon2.hash(data.password);

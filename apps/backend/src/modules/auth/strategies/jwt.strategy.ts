@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { JwtUser } from 'src/modules/users/types/user.type';
+import { JwtUser } from '../../users/types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -11,11 +11,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get('auth').jwtSecret,
+      secretOrKey: configService.get<string>('auth.jwtSecret'),
     });
   }
 
   validate(payload: any): JwtUser {
-    return { userId: Number(payload.sub) };
+    return { id: Number(payload.sub) };
   }
 }
