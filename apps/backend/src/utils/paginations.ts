@@ -20,7 +20,7 @@ export function getPaginationOptions(
   };
 }
 
-export function getPaginationData<T = void>(
+export function getPaginationData<T>(
   items: T[],
   offset: number,
   limit: number,

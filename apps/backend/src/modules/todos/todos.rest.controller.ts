@@ -1,15 +1,24 @@
-import { Controller, Post, Get, UseGuards, Body, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  UseGuards,
+  Body,
+  Query,
+  Param,
+} from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 
 import { TodosService } from './todos.service';
-import { CreateTodoDto } from './dtos/createTodo.dto';
+import { CreateTodoDto } from './dto/createTodo.dto';
 import { JwtUser } from '../users/types';
 import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { Todo } from './types';
-import { PaginationRequestDto } from 'src/core/dtos/paginationRequest.dto';
-import { PaginationTransformPipe } from 'src/core/pipes/paginationTransform.pipe';
 import { ReturnPagination, getPaginationOptions } from 'src/utils/paginations';
+import { GetAllTodosDto } from './dto/getAllTodos.dto';
+import { DeleteOneParams } from './dto/deleteOneParams.dto';
 
 @Controller('/todos')
 export class TodosController {
@@ -32,12 +41,9 @@ export class TodosController {
   @Get('/')
   async getAll(
     @AuthUser() user: JwtUser,
-    @Query(new PaginationTransformPipe()) pagination: PaginationRequestDto,
+    @Query() query: GetAllTodosDto,
   ): Promise<ReturnPagination<Todo>> {
-    const paginationOptions = getPaginationOptions(
-      pagination.page,
-      pagination.limit,
-    );
+    const paginationOptions = getPaginationOptions(query.page, query.limit);
 
     return await this.todosService.getAll({
       where: {
@@ -47,5 +53,11 @@ export class TodosController {
       take: paginationOptions.limit,
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/:todoId')
+  async delete(@AuthUser() user: JwtUser, @Param() params: DeleteOneParams) {
+    return await this.todosService.delete(params.todoId);
   }
 }

@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class PaginationRequestDto {
+export class PaginationDto {
   @Type(() => Number)
   @IsNotEmpty({ message: 'PAGE_IS_NOT_EMPTY' })
   @IsNumber(

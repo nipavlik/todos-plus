@@ -21,10 +21,13 @@ export class TodosService {
   async getAll(options: GetAllTodos): Promise<ReturnPagination<Todo>> {
     const todos = await this.todosRepository.findAll(options);
 
-    if (todos.items.length === 0) {
-      throw new NotFoundException('NOT_FOUND_PAGE');
-    }
-
     return todos;
+  }
+
+  async delete(todoId: number): Promise<Todo> {
+    const exist = await this.todosRepository.findOne({ where: { id: todoId } });
+    if (!exist) throw new NotFoundException('NOT_FOUND_TODO');
+
+    return await this.todosRepository.delete({ where: { id: todoId } });
   }
 }

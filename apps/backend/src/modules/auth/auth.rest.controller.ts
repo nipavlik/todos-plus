@@ -4,9 +4,9 @@ import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { LocalAuthGuard } from './guards/localAuth.guard';
 
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dtos/register.dto';
+import { RegisterDto } from './dto/register.dto';
 
-import { RefreshTokenDto } from './dtos/refreshToken.dto';
+import { RefreshTokenDto } from './dto/refreshToken.dto';
 
 import { AuthUser } from './decorators/authUser.decorator';
 

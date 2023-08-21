@@ -13,6 +13,13 @@ export class TodosRepository {
     return this.prisma.todo.create({ data });
   }
 
+  async findOne(options: {
+    where: Prisma.TodoWhereInput;
+  }): Promise<Todo | null> {
+    const { where } = options;
+    return await this.prisma.todo.findFirst({ where });
+  }
+
   async findAll(options: {
     skip: number;
     take: number;
@@ -28,5 +35,18 @@ export class TodosRepository {
     ]);
 
     return getPaginationData<Todo>(todos, skip, take, count);
+  }
+
+  async update(params: {
+    where: Prisma.TodoWhereUniqueInput;
+    data: Prisma.TodoUpdateInput;
+  }): Promise<Todo> {
+    const { where, data } = params;
+    return this.prisma.todo.update({ where, data });
+  }
+
+  async delete(params: { where: Prisma.TodoWhereUniqueInput }): Promise<Todo> {
+    const { where } = params;
+    return this.prisma.todo.delete({ where });
   }
 }

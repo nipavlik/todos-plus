@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-
+import * as lodash from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as argon2 from 'argon2';
 import { DateTime } from 'luxon';
 
-import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 
 import { RefreshTokensRepository } from './repositories/refreshTokens.repository';
@@ -121,9 +121,8 @@ export class AuthService {
     const user: User | null = await this.usersService.getOne({ id: userId });
     if (!user) throw new NotFoundException('NOT_FOUND_USER');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
+    const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
 
-    return userWithoutPassword;
+    return userNoPassword;
   }
 }
