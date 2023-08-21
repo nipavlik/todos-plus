@@ -1,12 +1,13 @@
 import { Controller, Post, UseGuards, Body, Get } from '@nestjs/common';
+import * as lodash from 'lodash';
 
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { LocalAuthGuard } from './guards/localAuth.guard';
 
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterBodyDto } from './dto/registerBody.dto';
 
-import { RefreshTokenDto } from './dto/refreshToken.dto';
+import { RefreshTokenBodyDto } from './dto/refreshTokenBody.dto';
 
 import { AuthUser } from './decorators/authUser.decorator';
 
@@ -24,18 +25,19 @@ export class AuthController {
   }
 
   @Post('/register')
-  async register(@Body() registerDto: RegisterDto): Promise<UserNoPassword> {
+  async register(
+    @Body() registerDto: RegisterBodyDto,
+  ): Promise<UserNoPassword> {
     const newUser: User = await this.authService.register(registerDto);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = newUser;
+    const userNoPassword: UserNoPassword = lodash.omit(newUser, ['password']);
 
-    return userWithoutPassword;
+    return userNoPassword;
   }
 
   @Post('/refresh-token')
   async refreshToken(
-    @Body() refreshTokenDto: RefreshTokenDto,
+    @Body() refreshTokenDto: RefreshTokenBodyDto,
   ): Promise<PairKey> {
     return await this.authService.refreshToken(refreshTokenDto.token);
   }

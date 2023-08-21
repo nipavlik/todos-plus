@@ -12,12 +12,12 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 
 import { TodosService } from './todos.service';
-import { CreateTodoDto } from './dto/createTodo.dto';
+import { CreateTodoBodyDto } from './dto/createTodoBody.dto';
 import { JwtUser } from '../users/types';
 import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { Todo } from './types';
 import { ReturnPagination, getPaginationOptions } from 'src/utils/paginations';
-import { GetAllTodosDto } from './dto/getAllTodos.dto';
+import { GetAllTodosQueryDto } from './dto/getAllTodosQuery.dto';
 import { DeleteOneParams } from './dto/deleteOneParams.dto';
 
 @Controller('/todos')
@@ -28,7 +28,7 @@ export class TodosController {
   @Post('/')
   async create(
     @AuthUser() user: JwtUser,
-    @Body() createTodoDto: CreateTodoDto,
+    @Body() createTodoDto: CreateTodoBodyDto,
   ): Promise<Todo> {
     return await this.todosService.create({
       title: createTodoDto.title,
@@ -41,7 +41,7 @@ export class TodosController {
   @Get('/')
   async getAll(
     @AuthUser() user: JwtUser,
-    @Query() query: GetAllTodosDto,
+    @Query() query: GetAllTodosQueryDto,
   ): Promise<ReturnPagination<Todo>> {
     const paginationOptions = getPaginationOptions(query.page, query.limit);
 

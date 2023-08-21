@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
-export class RegisterDto {
+export class RegisterBodyDto {
   @IsNotEmpty({ message: 'FIRST_NAME_IS_NOT_EMPTY' })
   @IsString({ message: 'FIRST_NAME_IS_STRING' })
   @MaxLength(255, { message: 'FIRST_NAME_MAX_LENGTH_255' })
@@ -19,6 +19,6 @@ export class RegisterDto {
 
   @IsNotEmpty({ message: 'PASSWORD_IS_NOT_EMPTY' })
   @IsString({ message: 'PASSWORD_IS_STRING' })
-  @MaxLength(64, { message: 'PASSWORD_MAX_LENGTH_64' })
+  @MaxLength(64, { message: 'PASSWORD_MAX_LssENGTH_64' })
   password: string;
 }
