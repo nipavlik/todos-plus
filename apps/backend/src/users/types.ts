@@ -12,3 +12,5 @@ export type CreateUser = Pick<
   Prisma.UserCreateInput,
   'firstName' | 'lastName' | 'nickname' | 'password'
 >;
+
+export type UpdateUser = Prisma.UserUpdateInput;

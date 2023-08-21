@@ -15,3 +15,5 @@ export type GetAllTodos = {
   where?: Prisma.TodoWhereInput;
   orderBy?: Prisma.TodoOrderByWithRelationInput;
 };
+
+export type UpdateTodo = Prisma.TodoUpdateInput;

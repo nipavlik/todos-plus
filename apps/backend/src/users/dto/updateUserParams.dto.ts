@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, Min } from 'class-validator';
 
-export class GetOneParams {
+export class UpdateUserParams {
   @Type(() => Number)
   @IsNotEmpty({ message: 'USER_ID_IS_NOT_EMPTY' })
   @IsNumber(

@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Delete,
   UseGuards,
   Body,
@@ -17,7 +18,9 @@ import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { Todo } from './types';
 import { ReturnPagination, getPaginationOptions } from 'src/utils/paginations';
 import { GetAllTodosQueryDto } from './dto/getAllTodosQuery.dto';
-import { DeleteOneParams } from './dto/deleteOneParams.dto';
+import { DeleteParams } from './dto/deleteTodoParams.dto';
+import { UpdateTodoParams } from './dto/updateTodoParams.dto';
+import { UpdateTodoBodyDto } from './dto/updateTodoBody.dto';
 
 @Controller('/todos')
 export class TodosController {
@@ -55,8 +58,18 @@ export class TodosController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Put('/:todoId')
+  async update(
+    @AuthUser() user: JwtUser,
+    @Param() params: UpdateTodoParams,
+    @Body() updateTodoDto: UpdateTodoBodyDto,
+  ) {
+    return await this.todosService.update(params.todoId, updateTodoDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Delete('/:todoId')
-  async delete(@AuthUser() user: JwtUser, @Param() params: DeleteOneParams) {
+  async delete(@AuthUser() user: JwtUser, @Param() params: DeleteParams) {
     return await this.todosService.delete(params.todoId);
   }
 }

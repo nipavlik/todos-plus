@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, Min } from 'class-validator';
 
-export class DeleteOneParams {
+export class UpdateTodoParams {
   @Type(() => Number)
   @IsNotEmpty({ message: 'TODO_ID_IS_NOT_EMPTY' })
   @IsNumber(

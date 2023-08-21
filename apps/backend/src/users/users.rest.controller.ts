@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Put,
+  Body,
   UseGuards,
   Param,
   NotFoundException,
@@ -12,7 +14,9 @@ import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 import { UsersService } from './users.service';
 import { JwtUser, User, UserNoPassword } from '../users/types';
 import { AuthUser } from '../auth/decorators/authUser.decorator';
-import { GetOneParams } from './dto/getOneParams.dto';
+import { GetUserParams } from './dto/getUserParams.dto';
+import { UpdateUserParams } from './dto/updateUserParams.dto';
+import { UpdateUserBodyDto } from './dto/updateUserBody.dto';
 
 @Controller('/users')
 export class UsersController {
@@ -22,7 +26,7 @@ export class UsersController {
   @Get('/:userId')
   async getOne(
     @AuthUser() currentUser: JwtUser,
-    @Param() params: GetOneParams,
+    @Param() params: GetUserParams,
   ): Promise<UserNoPassword> {
     const user: User | null = await this.usersService.getOne({
       id: params.userId,
@@ -33,5 +37,15 @@ export class UsersController {
     const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
 
     return userNoPassword;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/:userId')
+  async update(
+    @AuthUser() user: JwtUser,
+    @Param() params: UpdateUserParams,
+    @Body() updateUserDto: UpdateUserBodyDto,
+  ): Promise<UserNoPassword> {
+    return await this.usersService.update(params.userId, updateUserDto);
   }
 }
