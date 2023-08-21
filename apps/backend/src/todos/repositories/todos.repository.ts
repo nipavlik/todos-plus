@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Todo } from '@prisma/client';
 
-import { PrismaService } from '../../../core/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { ReturnPagination, getPaginationData } from 'src/utils/paginations';
 
 @Injectable()

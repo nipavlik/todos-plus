@@ -4,7 +4,7 @@ import { User } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 import { UsersRepository } from './users.repository';
-import { PrismaService } from '../../../core/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 async function createRandomUser(): Promise<User> {
   const date = new Date(faker.date.past());

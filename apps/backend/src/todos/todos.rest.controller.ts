@@ -8,7 +8,6 @@ import {
   Query,
   Param,
 } from '@nestjs/common';
-
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 
 import { TodosService } from './todos.service';

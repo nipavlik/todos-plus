@@ -12,7 +12,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 import { RefreshTokensRepository } from './repositories/refreshTokens.repository';
-import { PrismaModule } from 'src/core/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [
