@@ -24,12 +24,12 @@ export class AuthService {
 
   /**
    * Проверяет пользователя по никнейму и паролю.
-   * @param {string} nickname - Никнейм пользователя.
+   * @param {string} username - Никнейм пользователя.
    * @param {string} password - Пароль пользователя.
    * @returns {Promise<User | null>} - Объект пользователя или null, если пользователь не найден или пароль неверный.
    */
-  async validateUser(nickname: string, password: string): Promise<User | null> {
-    const user = await this.usersService.getOne({ nickname });
+  async validateUser(username: string, password: string): Promise<User | null> {
+    const user = await this.usersService.getOne({ username });
     if (user && (await argon2.verify(user.password, password))) {
       return user;
     }
@@ -50,14 +50,14 @@ export class AuthService {
    * @param {Object} data - Данные нового пользователя.
    * @param {string} data.firstName - Имя пользователя.
    * @param {string} data.lastName - Фамилия пользователя.
-   * @param {string} data.nickname - Никнейм пользователя.
+   * @param {string} data.username - Никнейм пользователя.
    * @param {string} data.password - Пароль пользователя.
    * @returns {Promise<User>} - Объект пользователя.
    */
   async register(data: {
     firstName: string;
     lastName: string;
-    nickname: string;
+    username: string;
     password: string;
   }): Promise<User> {
     return await this.usersService.create(data);

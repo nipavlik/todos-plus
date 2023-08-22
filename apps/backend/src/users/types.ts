@@ -10,7 +10,7 @@ export type FindOneUser = Prisma.UserWhereInput;
 
 export type CreateUser = Pick<
   Prisma.UserCreateInput,
-  'firstName' | 'lastName' | 'nickname' | 'password'
+  'firstName' | 'lastName' | 'username' | 'password'
 >;
 
 export type UpdateUser = Prisma.UserUpdateInput;

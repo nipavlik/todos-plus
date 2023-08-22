@@ -11,11 +11,11 @@ export class RegisterBodyDto {
   @MaxLength(255, { message: 'LAST_NAME_MAX_LENGTH_255' })
   lastName: string;
 
-  @IsNotEmpty({ message: 'NICKNAME_IS_NOT_EMPTY' })
-  @IsString({ message: 'NICKNAME_IS_STRING' })
-  @MaxLength(255, { message: 'FNICKNAME_MAX_LENGTH_255' })
-  @MinLength(5, { message: 'FNICKNAME_MIN_LENGTH_5' })
-  nickname: string;
+  @IsNotEmpty({ message: 'USERNAME_IS_NOT_EMPTY' })
+  @IsString({ message: 'USERNAME_IS_STRING' })
+  @MaxLength(255, { message: 'USERNAME_MAX_LENGTH_255' })
+  @MinLength(5, { message: 'USERNAME_MIN_LENGTH_5' })
+  username: string;
 
   @IsNotEmpty({ message: 'PASSWORD_IS_NOT_EMPTY' })
   @IsString({ message: 'PASSWORD_IS_STRING' })

@@ -23,8 +23,8 @@ export class UsersService {
   }
 
   async create(data: CreateUser): Promise<User> {
-    const existUser = await this.getOne({ nickname: data.nickname });
-    if (existUser) throw new BadRequestException('NICKNAME_USED');
+    const existUser = await this.getOne({ username: data.username });
+    if (existUser) throw new BadRequestException('USERNAME_USED');
 
     const hashPassword = await argon2.hash(data.password);
 

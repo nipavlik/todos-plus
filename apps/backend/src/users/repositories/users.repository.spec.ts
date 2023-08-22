@@ -12,7 +12,7 @@ async function createRandomUser(): Promise<User> {
     id: faker.number.int(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
-    nickname: faker.internet.userName(),
+    username: faker.internet.userName(),
     password: await argon2.hash(faker.internet.password()),
     createdAt: date,
     updatedAt: date,
@@ -72,14 +72,14 @@ describe('UsersRepository', () => {
       expect(result).toEqual(user);
     });
 
-    it('find by nickname', async () => {
+    it('find by username', async () => {
       const user: User = users[faker.number.int({ min: 0, max: 9 })];
 
       const findFirstSpy = jest
         .spyOn(prismaService.user, 'findFirst')
         .mockResolvedValue(user);
 
-      const options = { where: { nickname: user.nickname } };
+      const options = { where: { username: user.username } };
       const result = await usersRepository.findOne(options);
 
       expect(findFirstSpy).toHaveBeenCalledWith(options);
@@ -99,7 +99,7 @@ describe('UsersRepository', () => {
   //       data: {
   //         firstName: 's',
   //         lastName: 'nik',
-  //         nickname: 'paulox2',
+  //         username: 'paulox2',
   //         password: 'awd',
   //       },
   //     };
