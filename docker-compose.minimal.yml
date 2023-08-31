@@ -1,6 +1,7 @@
 version: "3.9"
 name: todos-plus-minimal
 services:
+
   postgres:
     container_name: postgres-minimal
     image: postgres:15.4

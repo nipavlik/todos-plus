@@ -1,6 +1,7 @@
 version: "3.9"
 name: todos-plus-prod
 services:
+
   backend:
     container_name: backend-prod
     image: todos-plus-backend:latest
@@ -19,6 +20,7 @@ services:
       - 7000:7000
     depends_on:
       - postgres
+      
   postgres:
     container_name: postgres-prod
     image: postgres:15.4
