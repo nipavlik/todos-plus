@@ -17,6 +17,9 @@ export class RefreshToken {
   @Column({ name: 'token', type: 'uuid' })
   token: string;
 
+  @Column({ name: 'user_id' })
+  userId: number;
+
   @CreateDateColumn({
     name: 'created_at',
   })

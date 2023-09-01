@@ -6,14 +6,14 @@ import { configModuleOptions } from './config/options';
 
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { TodosModule } from './todos/todos.module';
+// import { TodosModule } from './todos/todos.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
-    TodosModule,
+    // TodosModule,
     ConfigModule.forRoot(configModuleOptions),
     TypeOrmModule.forRoot({
       type: 'postgres',

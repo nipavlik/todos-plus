@@ -14,5 +14,5 @@ export class UpdateUserBodyDto {
   @IsOptional()
   @IsString({ message: 'PASSWORD_IS_STRING' })
   @MaxLength(64, { message: 'PASSWORD_MAX_LENGTH_64' })
-  password: string;
+  password?: string;
 }

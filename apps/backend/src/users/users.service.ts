@@ -4,54 +4,75 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import * as lodash from 'lodash';
+// import * as lodash from 'lodash';
 
-import { UsersRepository } from './repositories/users.repository';
-import { User } from '@prisma/client';
-import { CreateUser, FindOneUser, UpdateUser, UserNoPassword } from './types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
 
-  async getOne(data: FindOneUser): Promise<User | null> {
-    const user = await this.usersRepository.findOne({
-      where: data,
-    });
+  async getOneById(id: number): Promise<User | null> {
+    return await this.usersRepository.findOne({ where: { id } });
+  }
+
+  async getOneByIdOrFail(id: number): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+
+    if (!user) throw new NotFoundException('NOT_FOUND_USER');
 
     return user;
   }
 
-  async create(data: CreateUser): Promise<User> {
-    const existUser = await this.getOne({ username: data.username });
+  async getOneByUsername(username: string): Promise<User | null> {
+    return await this.usersRepository.findOne({ where: { username } });
+  }
+
+  async create(data: {
+    firstName: string;
+    lastName: string;
+    username: string;
+    password: string;
+  }): Promise<User> {
+    const existUser = await this.getOneByUsername(data.username);
     if (existUser) throw new BadRequestException('USERNAME_USED');
 
     const hashPassword = await argon2.hash(data.password);
 
-    const newUser = await this.usersRepository.create({
-      data: { ...data, password: hashPassword },
+    const newUser = this.usersRepository.create({
+      ...data,
+      password: hashPassword,
     });
+
+    await this.usersRepository.save(newUser);
 
     return newUser;
   }
 
-  async update(userId: number, data: UpdateUser): Promise<UserNoPassword> {
-    const exist = await this.usersRepository.findOne({ where: { id: userId } });
-    if (!exist) throw new NotFoundException('NOT_FOUND_TODO');
+  async update(
+    userId: number,
+    data: {
+      firstName: string;
+      lastName: string;
+      password?: string;
+    },
+  ) {
+    const user = await this.getOneByIdOrFail(userId);
 
-    const newData = data;
+    user.firstName = data.firstName;
+    user.lastName = data.lastName;
 
-    if (newData.password) {
-      newData.password = await argon2.hash(String(data.password));
+    if (data.password) {
+      user.password = await argon2.hash(String(data.password));
     }
 
-    const user = await this.usersRepository.update({
-      where: { id: userId },
-      data: newData,
-    });
+    // const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
 
-    const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
-
-    return userNoPassword;
+    return await this.usersRepository.save(user);
   }
 }

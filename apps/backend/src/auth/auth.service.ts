@@ -1,25 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as lodash from 'lodash';
+// import * as lodash from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as argon2 from 'argon2';
 import { DateTime } from 'luxon';
 
 import { UsersService } from '../users/users.service';
 
-import { RefreshTokensRepository } from './repositories/refreshTokens.repository';
-
 import { PairKey } from './types';
-import { User, UserNoPassword } from '../users/types';
+import { User } from 'src/users/entities/user.entity';
+import { RefreshToken } from './entities/refreshToken.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private refreshTokensRepository: RefreshTokensRepository,
     private configService: ConfigService,
+    @InjectRepository(RefreshToken)
+    private refreshTokensRepository: Repository<RefreshToken>,
   ) {}
 
   /**
@@ -29,7 +31,7 @@ export class AuthService {
    * @returns {Promise<User | null>} - Объект пользователя или null, если пользователь не найден или пароль неверный.
    */
   async validateUser(username: string, password: string): Promise<User | null> {
-    const user = await this.usersService.getOne({ username });
+    const user = await this.usersService.getOneByUsername(username);
     if (user && (await argon2.verify(user.password, password))) {
       return user;
     }
@@ -71,9 +73,11 @@ export class AuthService {
   async generatePairKey(userId: number): Promise<PairKey> {
     const payload = { sub: userId };
 
-    const refreshToken = await this.refreshTokensRepository.create({
-      data: { user: { connect: { id: userId } }, token: uuidv4() },
+    const refreshToken = this.refreshTokensRepository.create({
+      user: { id: userId },
+      token: uuidv4(),
     });
+    await this.refreshTokensRepository.save(refreshToken);
 
     return {
       accessToken: this.jwtService.sign(payload),
@@ -88,14 +92,14 @@ export class AuthService {
    * @throws {NotFoundException} - Если токен не найден или является недействительным.
    */
   async refreshToken(token: string): Promise<PairKey> {
-    const oldRefreshToken = await this.refreshTokensRepository.getOne({
+    const refreshToken = await this.refreshTokensRepository.findOne({
       where: { token },
     });
-    if (!oldRefreshToken) throw new NotFoundException('NOT_FOUND_TOKEN');
+    if (!refreshToken) throw new NotFoundException('NOT_FOUND_TOKEN');
 
     const now = DateTime.now();
     const tokenDateIn3Days = DateTime.fromISO(
-      oldRefreshToken.updatedAt.toISOString(),
+      refreshToken.updatedAt.toISOString(),
     ).plus({
       seconds: this.configService.get<number>('auth.refreshExpiresIn'),
     });
@@ -104,25 +108,23 @@ export class AuthService {
       throw new NotFoundException('INVALID_TOKEN');
     }
 
-    const payload = { sub: oldRefreshToken.userId };
+    const payload = { sub: refreshToken.userId };
 
-    const newRefreshToken = await this.refreshTokensRepository.update({
-      where: { id: oldRefreshToken.id },
-      data: { token: uuidv4() },
-    });
+    refreshToken.token = uuidv4();
+
+    await this.refreshTokensRepository.save(refreshToken);
 
     return {
       accessToken: this.jwtService.sign(payload),
-      refreshToken: newRefreshToken.token,
+      refreshToken: refreshToken.token,
     };
   }
 
-  async me(userId: number): Promise<UserNoPassword> {
-    const user: User | null = await this.usersService.getOne({ id: userId });
-    if (!user) throw new NotFoundException('NOT_FOUND_USER');
+  async me(userId: number) {
+    const user = await this.usersService.getOneByIdOrFail(userId);
 
-    const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
+    // const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
 
-    return userNoPassword;
+    return user;
   }
 }

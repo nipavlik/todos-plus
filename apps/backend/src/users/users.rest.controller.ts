@@ -1,13 +1,5 @@
-import {
-  Controller,
-  Get,
-  Put,
-  Body,
-  UseGuards,
-  Param,
-  NotFoundException,
-} from '@nestjs/common';
-import * as lodash from 'lodash';
+import { Controller, Get, Put, Body, UseGuards, Param } from '@nestjs/common';
+// import * as lodash from 'lodash';
 
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 
@@ -23,28 +15,21 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:userId')
-  async getOne(
-    @AuthUser() currentUser: JwtUser,
-    @Param() params: GetUserParams,
-  ): Promise<UserNoPassword> {
-    const user: User | null = await this.usersService.getOne({
-      id: params.userId,
-    });
+  async getOne(@AuthUser() currentUser: any, @Param() params: GetUserParams) {
+    const user = await this.usersService.getOneByIdOrFail(params.userId);
 
-    if (!user) throw new NotFoundException('NOT_FOUND_USER');
+    // const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
 
-    const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
-
-    return userNoPassword;
+    return user;
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('/:userId')
   async update(
-    @AuthUser() user: JwtUser,
+    @AuthUser() user: any,
     @Param() params: UpdateUserParams,
     @Body() updateUserDto: UpdateUserBodyDto,
-  ): Promise<UserNoPassword> {
+  ) {
     return await this.usersService.update(params.userId, updateUserDto);
   }
 }

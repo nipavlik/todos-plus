@@ -23,6 +23,9 @@ export class Todo {
   @Column({ name: 'done', type: 'boolean', default: false })
   done: boolean;
 
+  @Column({ name: 'user_id' })
+  userId: number;
+
   @CreateDateColumn({
     name: 'created_at',
   })

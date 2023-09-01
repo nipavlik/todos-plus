@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UsersModule } from '../users/users.module';
 
@@ -10,15 +11,13 @@ import { AuthService } from './auth.service';
 
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-
-import { RefreshTokensRepository } from './repositories/refreshTokens.repository';
-import { PrismaModule } from '../prisma/prisma.module';
+import { RefreshToken } from './entities/refreshToken.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([RefreshToken]),
     PassportModule,
     UsersModule,
-    PrismaModule,
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('auth.jwtSecret'),
@@ -30,6 +29,6 @@ import { PrismaModule } from '../prisma/prisma.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RefreshTokensRepository],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
 })
 export class AuthModule {}
