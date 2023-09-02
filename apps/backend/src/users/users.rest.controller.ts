@@ -1,13 +1,15 @@
 import { Controller, Get, Put, Body, UseGuards, Param } from '@nestjs/common';
-// import * as lodash from 'lodash';
+import { plainToClass } from 'class-transformer';
 
+import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 
 import { UsersService } from './users.service';
-import { AuthUser } from '../auth/decorators/authUser.decorator';
+
 import { GetUserParams } from './dto/getUserParams.dto';
 import { UpdateUserParams } from './dto/updateUserParams.dto';
 import { UpdateUserBodyDto } from './dto/updateUserBody.dto';
+import { UserResponseDto } from './dto/userResponse.dto';
 
 @Controller('/users')
 export class UsersController {
@@ -15,12 +17,13 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:userId')
-  async getOne(@AuthUser() currentUser: any, @Param() params: GetUserParams) {
+  async getOne(
+    @AuthUser() currentUser: any,
+    @Param() params: GetUserParams,
+  ): Promise<UserResponseDto> {
     const user = await this.usersService.getOneByIdOrFail(params.userId);
 
-    // const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
-
-    return user;
+    return plainToClass(UserResponseDto, user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -29,7 +32,12 @@ export class UsersController {
     @AuthUser() user: any,
     @Param() params: UpdateUserParams,
     @Body() updateUserDto: UpdateUserBodyDto,
-  ) {
-    return await this.usersService.update(params.userId, updateUserDto);
+  ): Promise<UserResponseDto> {
+    const updatedUser = await this.usersService.update(
+      params.userId,
+      updateUserDto,
+    );
+
+    return plainToClass(UserResponseDto, updatedUser);
   }
 }

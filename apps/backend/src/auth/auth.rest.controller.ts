@@ -1,18 +1,18 @@
 import { Controller, Post, UseGuards, Body, Get } from '@nestjs/common';
-// import * as lodash from 'lodash';
+import { plainToClass } from 'class-transformer';
 
+import { AuthUser } from './decorators/authUser.decorator';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { LocalAuthGuard } from './guards/localAuth.guard';
 
 import { AuthService } from './auth.service';
+
 import { RegisterBodyDto } from './dto/registerBody.dto';
-
 import { RefreshTokenBodyDto } from './dto/refreshTokenBody.dto';
+import { UserResponseDto } from '../users/dto/userResponse.dto';
 
-import { AuthUser } from './decorators/authUser.decorator';
-
-// import {  } from '../users/types';
 import { PairKey } from './types';
+
 import { User } from '../users/entities/user.entity';
 
 @Controller('/auth')
@@ -26,14 +26,12 @@ export class AuthController {
   }
 
   @Post('/register')
-  async register(@Body() registerDto: RegisterBodyDto) {
+  async register(
+    @Body() registerDto: RegisterBodyDto,
+  ): Promise<UserResponseDto> {
     const newUser: User = await this.authService.register(registerDto);
 
-    // const userNoPassword = lodash.omit(newUser, ['password']);
-
-    // return userNoPassword;
-
-    return newUser;
+    return plainToClass(UserResponseDto, newUser);
   }
 
   @Post('/refresh-token')
@@ -45,7 +43,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/me')
-  async me(@AuthUser() user: any) {
-    return await this.authService.me(user.id);
+  async me(@AuthUser() user: any): Promise<UserResponseDto> {
+    const me = await this.authService.me(user.id);
+
+    return plainToClass(UserResponseDto, me);
   }
 }

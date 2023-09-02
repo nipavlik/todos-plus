@@ -1,39 +1,62 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-// import { CreateTodo, Todo, GetAllTodos, UpdateTodo } from './types';
-// import { ReturnPagination } from 'src/utils/paginations';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Todo } from './entities/todo.entity';
+import { ReturnPagination, getPaginationData } from 'src/utils/paginations';
 
 @Injectable()
 export class TodosService {
-  constructor() {}
+  constructor(
+    @InjectRepository(Todo)
+    private todosRepository: Repository<Todo>,
+  ) {}
 
-  // async create(data: CreateTodo): Promise<Todo> {
-  //   return await this.todosRepository.create({
-  //     data: {
-  //       title: data.title,
-  //       content: data.content,
-  //       user: { connect: { id: data.userId } },
-  //     },
-  //   });
-  // }
+  async create(data: { title: string; content: string; userId: number }) {
+    const todo = this.todosRepository.create(data);
 
-  // async getAll(options: GetAllTodos): Promise<ReturnPagination<Todo>> {
-  //   const todos = await this.todosRepository.findAll(options);
+    const newTodo = await this.todosRepository.save(todo);
 
-  //   return todos;
-  // }
+    return newTodo;
+  }
 
-  // async delete(todoId: number): Promise<Todo> {
-  //   const exist = await this.todosRepository.findOne({ where: { id: todoId } });
-  //   if (!exist) throw new NotFoundException('NOT_FOUND_TODO');
+  async getAllByUserId(options: {
+    userId: number;
+    skip: number;
+    take: number;
+  }) {
+    const [todos, count] = await this.todosRepository.findAndCount({
+      where: { userId: options.userId },
+      skip: options.skip,
+      take: options.take,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
 
-  //   return await this.todosRepository.delete({ where: { id: todoId } });
-  // }
+    return getPaginationData<Todo>(todos, options.skip, options.take, count);
+  }
 
-  // async update(todoId: number, data: UpdateTodo): Promise<Todo> {
-  //   const exist = await this.todosRepository.findOne({ where: { id: todoId } });
-  //   if (!exist) throw new NotFoundException('NOT_FOUND_TODO');
+  async delete(todoId: number): Promise<Todo> {
+    const todo = await this.todosRepository.findOne({ where: { id: todoId } });
+    if (!todo) throw new NotFoundException('NOT_FOUND_TODO');
 
-  //   return await this.todosRepository.update({ where: { id: todoId }, data });
-  // }
+    await this.todosRepository.remove(todo);
+
+    return todo;
+  }
+
+  async update(
+    todoId: number,
+    data: { title: string; content: string; done: boolean },
+  ): Promise<Todo> {
+    const todo = await this.todosRepository.findOne({ where: { id: todoId } });
+    if (!todo) throw new NotFoundException('NOT_FOUND_TODO');
+
+    todo.title = data.title;
+    todo.content = data.content;
+    todo.done = data.done;
+
+    return await this.todosRepository.save(todo);
+  }
 }
