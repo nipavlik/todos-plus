@@ -4,23 +4,49 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
-// import * as lodash from 'lodash';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 
+/**
+ * Сервис пользователей.
+ * @Injectable()
+ * @public
+ * @class
+ * @classdesc Представляет сервис пользователей.
+ */
 @Injectable()
 export class UsersService {
+  /**
+   * Конструктор класса UsersService.
+   * @constructor
+   * @param {Repository<User>} usersRepository - Репозиторий пользователей.
+   */
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
   ) {}
 
+  /**
+   * Получить пользователя по идентификатору.
+   * @public
+   * @async
+   * @param {number} id - Идентификатор пользователя.
+   * @returns {Promise<User | null>} - Объект пользователя или null, если пользователь не найден.
+   */
   async getOneById(id: number): Promise<User | null> {
     return await this.usersRepository.findOne({ where: { id } });
   }
 
+  /**
+   * Получить пользователя по идентификатору или вызвать ошибку, если пользователь не найден.
+   * @public
+   * @async
+   * @param {number} id - Идентификатор пользователя.
+   * @returns {Promise<User>} - Объект пользователя.
+   * @throws {NotFoundException} - Исключение, если пользователь не найден.
+   */
   async getOneByIdOrFail(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
 
@@ -29,10 +55,29 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Получить пользователя по имени пользователя.
+   * @public
+   * @async
+   * @param {string} username - Имя пользователя.
+   * @returns {Promise<User | null>} - Объект пользователя или null, если пользователь не найден.
+   */
   async getOneByUsername(username: string): Promise<User | null> {
     return await this.usersRepository.findOne({ where: { username } });
   }
 
+  /**
+   * Создать пользователя.
+   * @public
+   * @async
+   * @param {Object} data - Данные для создания пользователя.
+   * @param {string} data.firstName - Имя пользователя.
+   * @param {string} data.lastName - Фамилия пользователя.
+   * @param {string} data.username - Имя пользователя.
+   * @param {string} data.password - Пароль пользователя.
+   * @throws {BadRequestException} - Исключение, если имя пользователя уже используется.
+   * @returns {Promise<User>} - Объект созданного пользователя.
+   */
   async create(data: {
     firstName: string;
     lastName: string;
@@ -54,6 +99,17 @@ export class UsersService {
     return newUser;
   }
 
+  /**
+   * Обновить пользователя.
+   * @public
+   * @async
+   * @param {number} userId - Идентификатор пользователя.
+   * @param {Object} data - Данные для обновления пользователя.
+   * @param {string} data.firstName - Имя пользователя.
+   * @param {string} data.lastName - Фамилия пользователя.
+   * @param {string} data.password - Пароль пользователя (опционально).
+   * @returns {Promise<User>} - Обновленный объект пользователя.
+   */
   async update(
     userId: number,
     data: {
@@ -61,7 +117,7 @@ export class UsersService {
       lastName: string;
       password?: string;
     },
-  ) {
+  ): Promise<User> {
     const user = await this.getOneByIdOrFail(userId);
 
     user.firstName = data.firstName;
@@ -70,8 +126,6 @@ export class UsersService {
     if (data.password) {
       user.password = await argon2.hash(String(data.password));
     }
-
-    // const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
 
     return await this.usersRepository.save(user);
   }

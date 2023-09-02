@@ -1,21 +1,34 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-// import * as lodash from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as argon2 from 'argon2';
 import { DateTime } from 'luxon';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { UsersService } from '../users/users.service';
 
 import { PairKey } from './types';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { RefreshToken } from './entities/refreshToken.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
+/**
+ * Сервис аутентификации.
+ * @Injectable()
+ * @public
+ * @class
+ * @classdesc Представляет сервис аутентификации.
+ */
 @Injectable()
 export class AuthService {
+  /**
+   * @constructor
+   * @param {UsersService} usersService - Сервис пользователей.
+   * @param {JwtService} jwtService - Сервис JWT.
+   * @param {ConfigService} configService - Конфигурационный сервис.
+   * @param {Repository<RefreshToken>} refreshTokensRepository - Репозиторий токенов обновления.
+   */
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -25,10 +38,10 @@ export class AuthService {
   ) {}
 
   /**
-   * Проверяет пользователя по никнейму и паролю.
-   * @param {string} username - Никнейм пользователя.
-   * @param {string} password - Пароль пользователя.
-   * @returns {Promise<User | null>} - Объект пользователя или null, если пользователь не найден или пароль неверный.
+   * Проверяет учетные данные пользователя.
+   * @param {string} username - Имя пользователя.
+   * @param {string} password - Пароль.
+   * @returns {Promise<User|null>} - Промис, который разрешается пользователем, если проверка успешна, в противном случае null.
    */
   async validateUser(username: string, password: string): Promise<User | null> {
     const user = await this.usersService.getOneByUsername(username);
@@ -39,9 +52,9 @@ export class AuthService {
   }
 
   /**
-   * Пользовательная сессия входа.
-   * @param {User} user - Объект пользователя.
-   * @returns {Promise<PairKey>} - Объект с ключами доступа и обновления.
+   * Выполняет вход пользователя и генерирует пару токенов доступа и обновления.
+   * @param {User} user - Пользователь.
+   * @returns {Promise<PairKey>} - Промис, который разрешается парой токенов доступа и обновления.
    */
   async login(user: User): Promise<PairKey> {
     return await this.generatePairKey(user.id);
@@ -49,12 +62,8 @@ export class AuthService {
 
   /**
    * Регистрирует нового пользователя.
-   * @param {Object} data - Данные нового пользователя.
-   * @param {string} data.firstName - Имя пользователя.
-   * @param {string} data.lastName - Фамилия пользователя.
-   * @param {string} data.username - Никнейм пользователя.
-   * @param {string} data.password - Пароль пользователя.
-   * @returns {Promise<User>} - Объект пользователя.
+   * @param {Object} data - Данные пользователя (firstName, lastName, username, password).
+   * @returns {Promise<User>} - Промис, который разрешается созданным пользователем.
    */
   async register(data: {
     firstName: string;
@@ -66,9 +75,9 @@ export class AuthService {
   }
 
   /**
-   * Генерирует пару ключей.
+   * Генерирует пару токенов доступа и обновления для указанного пользователя.
    * @param {number} userId - Идентификатор пользователя.
-   * @returns {Promise<PairKey>} - Объект с токенами доступа и обновления.
+   * @returns {Promise<PairKey>} - Промис, который разрешается парой токенов доступа и обновления.
    */
   async generatePairKey(userId: number): Promise<PairKey> {
     const payload = { sub: userId };
@@ -86,10 +95,10 @@ export class AuthService {
   }
 
   /**
-   * Обновляет токен доступа и токен обновления.
+   * Обновляет токены доступа и обновления для указанного токена обновления.
    * @param {string} token - Токен обновления.
-   * @returns {Promise<PairKey>} - Объект, содержащий обновленные значения токенов.
-   * @throws {NotFoundException} - Если токен не найден или является недействительным.
+   * @returns {Promise<PairKey>} - Промис, который разрешается новой парой токенов доступа и обновления.
+   * @throws {NotFoundException} - Если токен обновления не найден или недействителен.
    */
   async refreshToken(token: string): Promise<PairKey> {
     const refreshToken = await this.refreshTokensRepository.findOne({
@@ -120,11 +129,12 @@ export class AuthService {
     };
   }
 
-  async me(userId: number) {
-    const user = await this.usersService.getOneByIdOrFail(userId);
-
-    // const userNoPassword: UserNoPassword = lodash.omit(user, ['password']);
-
-    return user;
+  /**
+   * Получает информацию о пользователе на основе его идентификатора.
+   * @param {number} userId - Идентификатор пользователя.
+   * @returns {Promise<User>} - Промис, который разрешается информацией о пользова
+   */
+  async me(userId: number): Promise<User> {
+    return await this.usersService.getOneByIdOrFail(userId);
   }
 }
