@@ -9,9 +9,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { UsersService } from '../users/users.service';
 
-import { PairKey } from './types';
 import { User } from '../users/entities/user.entity';
 import { RefreshToken } from './entities/refreshToken.entity';
+
+import { PairKey } from './types';
 
 /**
  * Сервис аутентификации.

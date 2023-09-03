@@ -6,6 +6,8 @@ import { Todo } from './entities/todo.entity';
 
 import { ReturnPagination, getPaginationData } from '../utils/paginations';
 
+import { CreateTodoProps, GetAllByUserIdProps, UpdateTodoProps } from './types';
+
 /**
  * Сервис для работы с задачами
  * @Injectable()
@@ -29,11 +31,7 @@ export class TodosService {
    * @param data - Данные для создания задачи
    * @returns Созданная задача
    */
-  async create(data: {
-    title: string;
-    content: string;
-    userId: number;
-  }): Promise<Todo> {
+  async create(data: CreateTodoProps): Promise<Todo> {
     const todo = this.todosRepository.create(data);
 
     const newTodo = await this.todosRepository.save(todo);
@@ -46,11 +44,9 @@ export class TodosService {
    * @param options - Опции запроса
    * @returns Список задач с пагинационными данными
    */
-  async getAllByUserId(options: {
-    userId: number;
-    skip: number;
-    take: number;
-  }): Promise<ReturnPagination<Todo>> {
+  async getAllByUserId(
+    options: GetAllByUserIdProps,
+  ): Promise<ReturnPagination<Todo>> {
     const [todos, count] = await this.todosRepository.findAndCount({
       where: { userId: options.userId },
       skip: options.skip,
@@ -83,10 +79,7 @@ export class TodosService {
    * @param data - Новые данные задачи
    * @returns Обновленная задача
    */
-  async update(
-    todoId: number,
-    data: { title: string; content: string; done: boolean },
-  ): Promise<Todo> {
+  async update(todoId: number, data: UpdateTodoProps): Promise<Todo> {
     const todo = await this.todosRepository.findOne({ where: { id: todoId } });
     if (!todo) throw new NotFoundException('NOT_FOUND_TODO');
 

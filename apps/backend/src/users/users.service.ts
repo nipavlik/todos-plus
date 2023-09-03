@@ -9,6 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { User } from './entities/user.entity';
 
+import { CreateUserProps, UpdateUserProps } from './types';
+
 /**
  * Сервис пользователей.
  * @Injectable()
@@ -78,12 +80,7 @@ export class UsersService {
    * @throws {BadRequestException} - Исключение, если имя пользователя уже используется.
    * @returns {Promise<User>} - Объект созданного пользователя.
    */
-  async create(data: {
-    firstName: string;
-    lastName: string;
-    username: string;
-    password: string;
-  }): Promise<User> {
+  async create(data: CreateUserProps): Promise<User> {
     const existUser = await this.getOneByUsername(data.username);
     if (existUser) throw new BadRequestException('USERNAME_USED');
 
@@ -110,14 +107,7 @@ export class UsersService {
    * @param {string} data.password - Пароль пользователя (опционально).
    * @returns {Promise<User>} - Обновленный объект пользователя.
    */
-  async update(
-    userId: number,
-    data: {
-      firstName: string;
-      lastName: string;
-      password?: string;
-    },
-  ): Promise<User> {
+  async update(userId: number, data: UpdateUserProps): Promise<User> {
     const user = await this.getOneByIdOrFail(userId);
 
     user.firstName = data.firstName;
