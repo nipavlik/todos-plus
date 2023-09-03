@@ -12,6 +12,7 @@ import { RefreshTokenBodyDto } from './dto/refreshTokenBody.dto';
 import { UserResponseDto } from '../users/dto/userResponse.dto';
 
 import { PairKey } from './types';
+import { JwtUser } from '../users/types';
 
 import { User } from '../users/entities/user.entity';
 
@@ -21,7 +22,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('/login/local')
-  async loginLocal(@AuthUser() user: any): Promise<PairKey> {
+  async loginLocal(@AuthUser() user: User): Promise<PairKey> {
     return this.authService.login(user);
   }
 
@@ -43,7 +44,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/me')
-  async me(@AuthUser() user: any): Promise<UserResponseDto> {
+  async me(@AuthUser() user: JwtUser): Promise<UserResponseDto> {
     const me = await this.authService.me(user.id);
 
     return plainToClass(UserResponseDto, me);

@@ -25,6 +25,8 @@ import { UpdateTodoBodyDto } from './dto/updateTodoBody.dto';
 
 import { Todo } from './entities/todo.entity';
 
+import { JwtUser } from '../users/types';
+
 @Controller('/todos')
 export class TodosController {
   constructor(private todosService: TodosService) {}
@@ -32,7 +34,7 @@ export class TodosController {
   @UseGuards(JwtAuthGuard)
   @Post('/')
   async create(
-    @AuthUser() user: any,
+    @AuthUser() user: JwtUser,
     @Body() createTodoDto: CreateTodoBodyDto,
   ): Promise<Todo> {
     return await this.todosService.create({
@@ -45,7 +47,7 @@ export class TodosController {
   @UseGuards(JwtAuthGuard)
   @Get('/')
   async getAll(
-    @AuthUser() user: any,
+    @AuthUser() user: JwtUser,
     @Query() query: GetAllTodosQueryDto,
   ): Promise<ReturnPagination<Todo>> {
     const paginationOptions = getPaginationOptions(query.page, query.limit);
@@ -60,7 +62,7 @@ export class TodosController {
   @UseGuards(JwtAuthGuard)
   @Put('/:todoId')
   async update(
-    @AuthUser() user: any,
+    @AuthUser() user: JwtUser,
     @Param() params: UpdateTodoParams,
     @Body() updateTodoDto: UpdateTodoBodyDto,
   ): Promise<Todo> {
@@ -70,7 +72,7 @@ export class TodosController {
   @UseGuards(JwtAuthGuard)
   @Delete('/:todoId')
   async delete(
-    @AuthUser() user: any,
+    @AuthUser() user: JwtUser,
     @Param() params: DeleteParams,
   ): Promise<Todo> {
     return await this.todosService.delete(params.todoId);

@@ -11,6 +11,8 @@ import { UpdateUserParams } from './dto/updateUserParams.dto';
 import { UpdateUserBodyDto } from './dto/updateUserBody.dto';
 import { UserResponseDto } from './dto/userResponse.dto';
 
+import { JwtUser } from './types';
+
 @Controller('/users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -18,7 +20,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('/:userId')
   async getOne(
-    @AuthUser() currentUser: any,
+    @AuthUser() currentUser: JwtUser,
     @Param() params: GetUserParams,
   ): Promise<UserResponseDto> {
     const user = await this.usersService.getOneByIdOrFail(params.userId);
@@ -29,7 +31,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Put('/:userId')
   async update(
-    @AuthUser() user: any,
+    @AuthUser() user: JwtUser,
     @Param() params: UpdateUserParams,
     @Body() updateUserDto: UpdateUserBodyDto,
   ): Promise<UserResponseDto> {
