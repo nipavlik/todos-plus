@@ -14,5 +14,12 @@ services:
     ports:
       - "7010:5432"
 
+  cache:
+    container_name: cache-minimal
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '7020:6379'
+
 volumes:
   postgres-data-minimal:
