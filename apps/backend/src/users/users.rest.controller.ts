@@ -5,6 +5,7 @@ import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 
 import { UsersService } from './users.service';
+import { UsersCacheService } from './usersCache.service';
 
 import { GetUserParams } from './dto/getUserParams.dto';
 import { UpdateUserParams } from './dto/updateUserParams.dto';
@@ -15,15 +16,33 @@ import { JwtUser } from './types';
 
 @Controller('/users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private usersCacheService: UsersCacheService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('/:userId')
-  async getOne(
+  async getOneById(
     @AuthUser() currentUser: JwtUser,
     @Param() params: GetUserParams,
   ): Promise<UserResponseDto> {
+    const cacheUser = await this.usersCacheService.getOneById({
+      userId: params.userId,
+    });
+
+    if (cacheUser) {
+      return plainToClass(UserResponseDto, cacheUser);
+    }
+
     const user = await this.usersService.getOneByIdOrFail(params.userId);
+
+    this.usersCacheService.setOneById(
+      {
+        userId: user.id,
+      },
+      user,
+    );
 
     return plainToClass(UserResponseDto, user);
   }
@@ -39,6 +58,8 @@ export class UsersController {
       params.userId,
       updateUserDto,
     );
+
+    await this.usersCacheService.resetOneById({ userId: updatedUser.id });
 
     return plainToClass(UserResponseDto, updatedUser);
   }
