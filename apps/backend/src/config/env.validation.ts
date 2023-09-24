@@ -28,6 +28,12 @@ class EnvironmentVariables {
 
   @IsNumber()
   AUTH_REFRESH_EXPIRES_IN: number;
+
+  @IsString()
+  CACHE_REDIS_URL: string;
+
+  @IsNumber()
+  CACHE_REDIS_DEFAULT_TTL: number;
 }
 
 export function validate(config: Record<string, unknown>) {

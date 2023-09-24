@@ -8,15 +8,13 @@ import {
   Body,
   Query,
   Param,
-  Inject,
 } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 
 import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 
 import { TodosService } from './todos.service';
+import { TodosCacheService } from './todosCache.service';
 
 import { ReturnPagination, getPaginationOptions } from '../utils/paginations';
 
@@ -29,16 +27,12 @@ import { UpdateTodoBodyDto } from './dto/updateTodoBody.dto';
 import { Todo } from './entities/todo.entity';
 
 import { JwtUser } from '../users/types';
-import {
-  getKeyCacheGetAllTodos,
-  getKeyPatternGetAllTodos,
-} from '../utils/cache';
 
 @Controller('/todos')
 export class TodosController {
   constructor(
     private todosService: TodosService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private todosCacheService: TodosCacheService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -53,33 +47,28 @@ export class TodosController {
       userId: user.id,
     });
 
-    const keys = await this.cacheManager.store.keys(
-      getKeyPatternGetAllTodos(user.id),
-    );
-    await Promise.all(keys.map((key) => this.cacheManager.del(key)));
+    await this.todosCacheService.resetAllByUserId({ userId: newTodo.userId });
 
     return newTodo;
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/')
-  async getAll(
+  async getAllByUserId(
     @AuthUser() user: JwtUser,
     @Query() query: GetAllTodosQueryDto,
   ): Promise<ReturnPagination<Todo>> {
-    const paginationOptions = getPaginationOptions(query.page, query.limit);
-
-    const cacheData = await this.cacheManager.get<ReturnPagination<Todo>>(
-      getKeyCacheGetAllTodos(
-        user.id,
-        paginationOptions.offset,
-        paginationOptions.limit,
-      ),
-    );
+    const cacheData = await this.todosCacheService.getAllByUserId({
+      userId: user.id,
+      page: query.page,
+      limit: query.limit,
+    });
 
     if (cacheData) {
       return cacheData;
     }
+
+    const paginationOptions = getPaginationOptions(query.page, query.limit);
 
     const data = await this.todosService.getAllByUserId({
       userId: user.id,
@@ -87,12 +76,12 @@ export class TodosController {
       take: paginationOptions.limit,
     });
 
-    await this.cacheManager.set(
-      getKeyCacheGetAllTodos(
-        user.id,
-        paginationOptions.offset,
-        paginationOptions.limit,
-      ),
+    this.todosCacheService.setAllByUserId(
+      {
+        userId: user.id,
+        page: query.page,
+        limit: query.limit,
+      },
       data,
     );
 
@@ -108,10 +97,7 @@ export class TodosController {
   ): Promise<Todo> {
     const todo = await this.todosService.update(params.todoId, updateTodoDto);
 
-    const keys = await this.cacheManager.store.keys(
-      getKeyPatternGetAllTodos(todo.userId),
-    );
-    await Promise.all(keys.map((key) => this.cacheManager.del(key)));
+    await this.todosCacheService.resetAllByUserId({ userId: todo.userId });
 
     return todo;
   }
@@ -124,10 +110,7 @@ export class TodosController {
   ): Promise<Todo> {
     const todo = await this.todosService.delete(params.todoId);
 
-    const keys = await this.cacheManager.store.keys(
-      getKeyPatternGetAllTodos(todo.userId),
-    );
-    await Promise.all(keys.map((key) => this.cacheManager.del(key)));
+    await this.todosCacheService.resetAllByUserId({ userId: todo.userId });
 
     return todo;
   }

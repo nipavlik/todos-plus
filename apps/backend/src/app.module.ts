@@ -1,9 +1,7 @@
+import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { join } from 'path';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
 
 import { configModuleOptions } from './config/options';
 
@@ -16,12 +14,6 @@ import { TodosModule } from './todos/todos.module';
     AuthModule,
     UsersModule,
     TodosModule,
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 900, // 15m
-      store: redisStore,
-      url: 'redis://127.0.0.1:7020',
-    }),
     ConfigModule.forRoot(configModuleOptions),
     TypeOrmModule.forRootAsync({
       useFactory: async (configService: ConfigService) =>
