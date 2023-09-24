@@ -34,6 +34,15 @@ class EnvironmentVariables {
 
   @IsNumber()
   CACHE_REDIS_DEFAULT_TTL: number;
+
+  @IsString()
+  RATE_LIMIT_REDIS_URL: string;
+
+  @IsNumber()
+  RATE_LIMIT_DEFAULT_TTL: number;
+
+  @IsNumber()
+  RATE_LIMIT_DEFAULT_LIMIT: number;
 }
 
 export function validate(config: Record<string, unknown>) {

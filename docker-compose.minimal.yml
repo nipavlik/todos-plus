@@ -22,5 +22,12 @@ services:
     ports:
       - '7020:6379'
 
+  rate-limit:
+    container_name: rate-limit-minimal
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '7030:6379'
+
 volumes:
   postgres-data-minimal:

@@ -9,6 +9,9 @@ import {
   Query,
   Param,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+
+import { ThrottlerUserGuard } from '../rateLimit/guards/throttlerUser.guard';
 
 import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
@@ -35,7 +38,8 @@ export class TodosController {
     private todosCacheService: TodosCacheService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 20, ttl: 60 * 1000 } })
+  @UseGuards(JwtAuthGuard, ThrottlerUserGuard)
   @Post('/')
   async create(
     @AuthUser() user: JwtUser,
@@ -52,7 +56,8 @@ export class TodosController {
     return newTodo;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 100, ttl: 60 * 1000 } })
+  @UseGuards(JwtAuthGuard, ThrottlerUserGuard)
   @Get('/')
   async getAllByUserId(
     @AuthUser() user: JwtUser,
@@ -88,7 +93,8 @@ export class TodosController {
     return data;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 200, ttl: 60 * 1000 } })
+  @UseGuards(JwtAuthGuard, ThrottlerUserGuard)
   @Put('/:todoId')
   async update(
     @AuthUser() user: JwtUser,
@@ -102,7 +108,8 @@ export class TodosController {
     return todo;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 200, ttl: 60 * 1000 } })
+  @UseGuards(JwtAuthGuard, ThrottlerUserGuard)
   @Delete('/:todoId')
   async delete(
     @AuthUser() user: JwtUser,

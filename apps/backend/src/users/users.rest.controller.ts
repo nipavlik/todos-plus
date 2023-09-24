@@ -1,5 +1,8 @@
 import { Controller, Get, Put, Body, UseGuards, Param } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { Throttle } from '@nestjs/throttler';
+
+import { ThrottlerUserGuard } from '../rateLimit/guards/throttlerUser.guard';
 
 import { AuthUser } from '../auth/decorators/authUser.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
@@ -21,7 +24,8 @@ export class UsersController {
     private usersCacheService: UsersCacheService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 100, ttl: 60 * 1000 } })
+  @UseGuards(JwtAuthGuard, ThrottlerUserGuard)
   @Get('/:userId')
   async getOneById(
     @AuthUser() currentUser: JwtUser,
@@ -47,7 +51,8 @@ export class UsersController {
     return plainToClass(UserResponseDto, user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 200, ttl: 60 * 1000 } })
+  @UseGuards(JwtAuthGuard, ThrottlerUserGuard)
   @Put('/:userId')
   async update(
     @AuthUser() user: JwtUser,
