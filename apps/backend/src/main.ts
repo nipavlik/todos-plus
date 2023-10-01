@@ -6,12 +6,15 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 
+import { winstonLogger } from './logger/winston.logger';
+
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
+    winstonLogger,
   );
 
   app.useGlobalPipes(
